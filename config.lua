@@ -117,3 +117,7 @@ Config.NotEnoghMoney = 'Du hast nicht genug Geld'
 Config.BoatFor = 'Boot für '
 Config.DollarSold ='$ Verkauft!'
 Config.NoBoats = 'Du hast keine Boote!'
+
+Config.GiveBoat = 'Boot Weitergeben'
+Config.YouGotABoat = 'Du hast ein Boot Bekommen'
+Config.YouGiveABoat = 'Du hast ein boot Weitergegeben'

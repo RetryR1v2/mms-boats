@@ -94,7 +94,6 @@ RegisterServerEvent('mms-boats:server:sellboat',function(sellprice, name)
     local sellprice2 = tonumber(sellprice)
     MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{identifier} , function(result)
         local newmaxboats = result[1].maxboats -1
-        print(newmaxboats)
         MySQL.update('UPDATE `mms_boats` SET maxboats = ? WHERE identifier = ?',{newmaxboats, identifier})
         
     end)
@@ -109,6 +108,61 @@ RegisterServerEvent('mms-boats:server:sellboat',function(sellprice, name)
         end
     end)
     
+end)
+
+RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,serverId)
+    local maxboats = 1
+    local src = source
+    local Character = VORPcore.getUser(src).getUsedCharacter
+    local identifier = Character.identifier
+    local ClosestCharakter = VORPcore.getUser(serverId).getUsedCharacter
+    local Closestidentifier = ClosestCharakter.identifier
+    MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{Closestidentifier} , function(result)
+        if result[1] == nil then
+            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats) VALUES (?, ?, ?, ?, ?)', {
+                Closestidentifier, name, model, sellprice,maxboats
+            }, function(id)
+            -- print(id)
+            end)
+            VORPcore.NotifyTip(serverId, Config.YouGotABoat, 5000)
+            MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{identifier} , function(result)
+                local newmaxboats = result[1].maxboats -1
+                MySQL.update('UPDATE `mms_boats` SET maxboats = ? WHERE identifier = ?',{newmaxboats, identifier})
+                    
+            end)
+            MySQL.query('SELECT * FROM mms_boats WHERE identifier = ?', {identifier}, function(result)
+                if result ~= nil then
+                    MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND name = ?', { identifier, name }, function()
+                    end)
+                    VORPcore.NotifyTip(src, Config.YouGiveABoat,  5000)
+                else
+                    VORPcore.NotifyTip(src, 'Error no Boats in Database ( Database Error)!',  5000)
+                end
+            end)
+        elseif result[1].maxboats < Config.MaxBoats then
+            local newmaxboats = result[1].maxboats +1
+            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats) VALUES (?, ?, ?, ?, ?)', {Closestidentifier, name, model, sellprice, newmaxboats}, function() end)
+            VORPcore.NotifyTip(serverId, Config.YouGotABoat, 5000)
+            MySQL.update('UPDATE `mms_boats` SET maxboats = ? WHERE identifier = ?',{newmaxboats, Closestidentifier})
+            MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{identifier} , function(result)
+                local newmaxboats = result[1].maxboats -1
+                MySQL.update('UPDATE `mms_boats` SET maxboats = ? WHERE identifier = ?',{newmaxboats, identifier})
+                    
+            end)
+            MySQL.query('SELECT * FROM mms_boats WHERE identifier = ?', {identifier}, function(result)
+                if result ~= nil then
+                    MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND name = ?', { identifier, name }, function()
+                    end)
+                    VORPcore.NotifyTip(src, Config.YouGiveABoat,  5000)
+                else
+                    VORPcore.NotifyTip(src, 'Error no Boats in Database ( Database Error)!',  5000)
+                end
+            end)
+        else
+            VORPcore.NotifyTip(serverId, Config.MaxBoatAmount, 5000)
+            VORPcore.NotifyTip(src, Config.MaxBoatAmount, 5000)
+        end
+        end)
 end)
 
 

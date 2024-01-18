@@ -128,13 +128,7 @@ Citizen.CreateThread(function()  --- RegisterFeather Menu
         ['border-radius'] = '6px'
         },
     }, function()
-        if boatSpawned == true then 
-            DeleteVehicle(boat)
-            boatSpawned = false
-            VORPcore.NotifyTip(Config.StoredBoat, 5000)
-        else
-            VORPcore.NotifyTip(Config.NoBoatInWater, 5000)
-        end
+        StoreBoat()
     end)
     BootTraderPage1:RegisterElement('button', {
         label =  Config.CloseTrader,
@@ -413,9 +407,78 @@ AddEventHandler('mms-boats:client:boatspawn',function(model,name,sellprice)
         BootTrader:Close({ 
         })
         VORPcore.NotifyTip(Config.BoatWatered, 5000)
+        TriggerEvent('mms-boats:client:boatprompt',model,name,sellprice)
         elseif alert == 'confirm' then
             BootTraderPage1:RouteTo()
-            TriggerServerEvent('mms-boats:server:sellboat',sellprice, name)
+            TriggerServerEvent('mms-boats:server:sellboat',sellprice, name,sellprice)
         end
     
 end)
+
+RegisterNetEvent('mms-boats:client:boatprompt')
+AddEventHandler('mms-boats:client:boatprompt',function(model,name,sellprice)
+    local BoatPrompt = BccUtils.Prompts:SetupPromptGroup()
+    local boatgive = BoatPrompt:RegisterPrompt(Config.GiveBoat, 0x760A9C6F, 1, 1, true, 'hold', {timedeventhash = 'MEDIUM_TIMED_EVENT'})
+    local boatstore = BoatPrompt:RegisterPrompt(Config.StoreBoat, 0xCEFD9220, 1, 1, true, 'hold', {timedeventhash = 'MEDIUM_TIMED_EVENT'})
+    local boatpos = GetEntityCoords(boat)
+    while true do
+        Wait(1)
+        if boatSpawned == true then
+        local playerCoords = GetEntityCoords(PlayerPedId())
+        local dist = #(playerCoords - boatpos)
+        if dist < 3 then
+            BoatPrompt:ShowGroup('Boot')
+            
+
+            --BccUtils.Misc.DrawText3D(plantcoords.x, plantcoords.y, plantcoords.z, _U('WaterCropPrompt'))
+            if boatgive:HasCompleted() then
+                TriggerEvent('mms-boats:client:giveboat',model,name,sellprice)
+            end
+            if boatstore:HasCompleted() then
+                StoreBoat()
+            end
+        end
+    end
+    end
+end)
+
+RegisterNetEvent('mms-boats:client:giveboat')
+AddEventHandler('mms-boats:client:giveboat',function(model,name,sellprice)
+    local closestPlayer, closestDistance = GetClosestPlayer()
+    if closestPlayer and closestDistance <= 50.0 then
+        local serverId = GetPlayerServerId(closestPlayer)
+        TriggerServerEvent('mms-boats:server:giveboat',model,name,sellprice,serverId)
+        StoreBoat()
+        else
+            VORPcore.NotifyTip('Niemand in der Nähe zum Weitergeben', 5000)
+        end
+end)
+
+function StoreBoat()
+    if boatSpawned == true then
+        DeleteVehicle(boat)
+        boatSpawned = false
+        VORPcore.NotifyTip(Config.StoredBoat, 5000)
+    else
+        VORPcore.NotifyTip(Config.NoBoatInWater, 5000)
+    end
+end
+
+function GetClosestPlayer()
+    local players = GetActivePlayers()
+    local player = PlayerId()
+    local coords = GetEntityCoords(PlayerPedId())
+    local closestDistance = nil
+    local closestPlayer = nil
+    for i = 1, #players, 1 do
+        local target = GetPlayerPed(players[i])
+        if players[i] ~= player then
+            local distance = #(coords - GetEntityCoords(target))
+            if closestDistance == nil or closestDistance > distance then
+                closestPlayer = players[i]
+                closestDistance = distance
+            end
+        end
+    end
+    return closestPlayer, closestDistance
+end

@@ -18,7 +18,9 @@
 - Updated to Feather-Menu
 - Added ox_lib
 - Language Settings in Config
-
+- Version 1.1.5
+- Added GiveBoat to Close Player
+- Added StoreBoat Option if you Drive Aways with boat you now can store it Everywhere
 # installation 
 
 - Run the SQL files to add Tables in your DB
