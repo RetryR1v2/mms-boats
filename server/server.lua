@@ -32,29 +32,31 @@ end
 
 ----------------- Buy Boat Part -------------
 
-RegisterServerEvent('mms-boats:server:buyboat', function(model,name,price)
+RegisterServerEvent('mms-boats:server:buyboat', function(model,name,price,storage)
     local src = source
     local Character = VORPcore.getUser(src).getUsedCharacter
     local identifier = Character.identifier
     local price2 = tonumber(price)
+    local StorageId = string.char(math.random(65, 90), math.random(65, 90), math.random(65, 90))
+    local StorageName = StorageId .. math.random(100, 999)
     local sellprice = price2 / 2
     local maxboats = 1
     if Character.money >= price2 then
         MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{identifier} , function(result)
         if result[1] == nil then
             Character.removeCurrency(0, price2)
-            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats) VALUES (?, ?, ?, ?, ?)', {
-            identifier, name, model, sellprice,maxboats
-            }, function(id)
-            -- print(id)
-            end)
+            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats,storageid,storagename,storage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
+            identifier, name, model, sellprice,maxboats,StorageId,StorageName,storage}, function()end)
             VORPcore.NotifyTip(src, Config.YouBuyedBoat.. name .. Config.For .. price .. Config.DollarBought, 5000)
+            --TriggerEvent('mms-boats:server:CreateInventory',src,StorageId,StorageName,storage)
         elseif result[1].maxboats < Config.MaxBoats then
             local newmaxboats = result[1].maxboats +1
             Character.removeCurrency(0, price2)
-            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats) VALUES (?, ?, ?, ?, ?)', {identifier, name, model, sellprice, maxboats}, function() end)
+            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats,storageid,storagename,storage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
+            identifier, name, model, sellprice,maxboats,StorageId,StorageName,storage}, function()end)
             VORPcore.NotifyTip(src, Config.YouBuyedBoat.. name .. Config.For .. price .. Config.DollarBought, 5000)
             MySQL.update('UPDATE `mms_boats` SET maxboats = ? WHERE identifier = ?',{newmaxboats, identifier})
+            --TriggerEvent('mms-boats:server:CreateInventory',src,StorageId,StorageName,storage)
         else
             VORPcore.NotifyTip(src, Config.MaxBoatAmount, 5000)
         end
@@ -64,12 +66,55 @@ RegisterServerEvent('mms-boats:server:buyboat', function(model,name,price)
     end
 end)
 
+RegisterServerEvent('mms-boats:server:CreateInventory', function(src,StorageId,StorageName,storage)
+    --@param data { id:string, name:string, limit:number, acceptWeapons:boolean, shared:boolean, ignoreItemStackLimit:boolean, whitelistItems:boolean, UsePermissions:boolean, UseBlackList:boolean, whitelistWeapons:boolean }
+exports.vorp_inventory:registerInventory(
+    {
+        id = StorageId,
+        name = StorageName,
+        limit = storage,
+        acceptWeapons = true,
+        shared = false,
+        ignoreItemStackLimit = true,
+
+    }
+)
+
+end)
+
+RegisterServerEvent('mms-boats:server:openstorage', function(storageid,storagename,storage)
+    local src = source
+    exports.vorp_inventory:registerInventory(
+    {
+        id = storageid,
+        name = storagename,
+        limit = storage,
+        acceptWeapons = true,
+        shared = false,
+        ignoreItemStackLimit = true,
+
+    }
+)
+    local isregistred = exports.vorp_inventory:isCustomInventoryRegistered(storageid)
+    if isregistred == true then
+    exports.vorp_inventory:openInventory(src, storageid)
+    end
+end)
+
+RegisterServerEvent('mms-boats:server:closestorage', function(storageid)
+local src = source
+local isregistred = exports.vorp_inventory:isCustomInventoryRegistered(storageid)
+    if isregistred == true then
+    exports.vorp_inventory:closeInventory(src, storageid)
+    exports.vorp_inventory:removeInventory(storageid)
+end
+end)
 
 RegisterServerEvent('mms-boats:server:getboatsfromdb',function()
     local src = source
     local Character = VORPcore.getUser(src).getUsedCharacter
     local identifier = Character.identifier
-    MySQL.query('SELECT `name`, `model`, `sellprice` FROM `mms_boats` WHERE `identifier` = ?', {identifier}, function(result)
+    MySQL.query('SELECT `name`, `model`, `sellprice`, `storageid`, `storagename`, `storage`  FROM `mms_boats` WHERE `identifier` = ?', {identifier}, function(result)
         if result and #result > 0 then
             local eintraege = {}
 
@@ -87,7 +132,7 @@ RegisterServerEvent('mms-boats:server:getboatsfromdb',function()
 
 end)
 
-RegisterServerEvent('mms-boats:server:sellboat',function(sellprice, name)
+RegisterServerEvent('mms-boats:server:sellboat',function(sellprice, name, storageid)
     local src = source
     local Character = VORPcore.getUser(src).getUsedCharacter
     local identifier = Character.identifier
@@ -99,7 +144,7 @@ RegisterServerEvent('mms-boats:server:sellboat',function(sellprice, name)
     end)
     MySQL.query('SELECT * FROM mms_boats WHERE identifier = ?', {identifier}, function(result)
         if result ~= nil then
-            MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND name = ?', { identifier, name }, function()
+            MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND storageid = ?', { identifier, storageid }, function()
             end)
             Character.addCurrency(0, sellprice2)
             VORPcore.NotifyTip(src, Config.BoatFor .. sellprice2 .. Config.DollarSold,  5000)
@@ -110,8 +155,10 @@ RegisterServerEvent('mms-boats:server:sellboat',function(sellprice, name)
     
 end)
 
-RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,serverId)
+RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,serverId,storageid,storage)
     local maxboats = 1
+    local StorageId = string.char(math.random(65, 90), math.random(65, 90), math.random(65, 90))
+    local StorageName = StorageId .. math.random(100, 999)
     local src = source
     local Character = VORPcore.getUser(src).getUsedCharacter
     local identifier = Character.identifier
@@ -119,11 +166,8 @@ RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,se
     local Closestidentifier = ClosestCharakter.identifier
     MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{Closestidentifier} , function(result)
         if result[1] == nil then
-            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats) VALUES (?, ?, ?, ?, ?)', {
-                Closestidentifier, name, model, sellprice,maxboats
-            }, function(id)
-            -- print(id)
-            end)
+            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats,storageid,storagename,storage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
+                Closestidentifier, name, model, sellprice,maxboats,StorageId,StorageName,storage}, function() end)
             VORPcore.NotifyTip(serverId, Config.YouGotABoat, 5000)
             MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{identifier} , function(result)
                 local newmaxboats = result[1].maxboats -1
@@ -132,7 +176,7 @@ RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,se
             end)
             MySQL.query('SELECT * FROM mms_boats WHERE identifier = ?', {identifier}, function(result)
                 if result ~= nil then
-                    MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND name = ?', { identifier, name }, function()
+                    MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND storageid = ?', { identifier, storageid }, function()
                     end)
                     VORPcore.NotifyTip(src, Config.YouGiveABoat,  5000)
                 else
@@ -141,7 +185,8 @@ RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,se
             end)
         elseif result[1].maxboats < Config.MaxBoats then
             local newmaxboats = result[1].maxboats +1
-            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats) VALUES (?, ?, ?, ?, ?)', {Closestidentifier, name, model, sellprice, newmaxboats}, function() end)
+            MySQL.insert('INSERT INTO `mms_boats` (identifier, name, model, sellprice, maxboats,storageid,storagename,storage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
+                Closestidentifier, name, model, sellprice,maxboats,StorageId,StorageName,storage}, function() end)
             VORPcore.NotifyTip(serverId, Config.YouGotABoat, 5000)
             MySQL.update('UPDATE `mms_boats` SET maxboats = ? WHERE identifier = ?',{newmaxboats, Closestidentifier})
             MySQL.query('SELECT `maxboats` FROM mms_boats WHERE identifier = ?',{identifier} , function(result)
@@ -151,7 +196,7 @@ RegisterServerEvent('mms-boats:server:giveboat',function(model,name,sellprice,se
             end)
             MySQL.query('SELECT * FROM mms_boats WHERE identifier = ?', {identifier}, function(result)
                 if result ~= nil then
-                    MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND name = ?', { identifier, name }, function()
+                    MySQL.execute('DELETE FROM mms_boats WHERE identifier = ? AND storageid = ?', { identifier, storageid }, function()
                     end)
                     VORPcore.NotifyTip(src, Config.YouGiveABoat,  5000)
                 else

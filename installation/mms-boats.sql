@@ -3,7 +3,10 @@ CREATE TABLE `mms_boats` (
 	`name` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 	`model` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 	`sellprice` INT(11) NULL DEFAULT NULL,
-	`maxboats` INT(11) NULL DEFAULT NULL
+	`maxboats` INT(11) NULL DEFAULT NULL,
+	`storageid` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`storagename` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+	`storage` INT(11) NULL DEFAULT NULL
 )
 COLLATE='utf8_general_ci'
 ENGINE=InnoDB

@@ -31,54 +31,63 @@ Config.Boats = {
         name = 'Kanu', --- Boat Name you can Translate
         price = '40',  --- Price of the Boat
         model = 'canoe', -- Model Dont Change
+        storage = 200,
 
     },
     {
         name = 'Baumstamm Kanu', --- Boat Name you can Translate
         price = '40',  --- Price of the Boat
         model = 'canoeTreeTrunk', -- Model Dont Change
+        storage = 200,
 
     },
     {
         name = 'Kajak 1', --- Boat Name you can Translate
         price = '70',  --- Price of the Boat
         model = 'pirogue', -- Model Dont Change
+        storage = 400,
 
     },
     {
         name = 'Kajak 2', --- Boat Name you can Translate
         price = '70',  --- Price of the Boat
         model = 'pirogue2', -- Model Dont Change
+        storage = 400,
 
     },
     {
         name = 'Paddelboot Klein', --- Boat Name you can Translate
         price = '120', --- Price of the Boat
         model = 'rowboat', -- Model Dont Change
+        storage = 500,
 
     },
     {
         name = 'Paddelboot Groß', --- Boat Name you can Translate
         price = '140',  --- Price of the Boat
         model = 'rowboatSwamp', -- Model Dont Change
+        storage = 600,
 
     },
     {
         name = 'Gondel', --- Boat Name you can Translate
         price = '160',  --- Price of the Boat
         model = 'skiff', -- Model Dont Change
+        storage = 800,
 
     },
     {
         name = 'Dampfboot Klein', --- Boat Name you can Translate
         price = '200',  --- Price of the Boat
         model = 'boatsteam02x', -- Model Dont Change
+        storage = 1000,
 
     },
     {
         name = 'Dampfboot Groß',  --- Boat Name you can Translate 
         price = '250',  --- Price of the Boat
         model = 'keelboat',  -- Model Dont Change
+        storage = 1000,
 
     },
 }
@@ -121,3 +130,4 @@ Config.NoBoats = 'Du hast keine Boote!'
 Config.GiveBoat = 'Boot Weitergeben'
 Config.YouGotABoat = 'Du hast ein Boot Bekommen'
 Config.YouGiveABoat = 'Du hast ein boot Weitergegeben'
+Config.BoatStorage = 'Lager Öffnen'

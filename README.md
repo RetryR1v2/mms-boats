@@ -8,7 +8,7 @@
 - Language Settings in Config
 
 
-# Chnagelog
+# Changelog
 - Initial Release Version 1.1.2
 - Buy Boats / Spawn Boats / Sell Boats
 - Version 1.1.3
@@ -21,6 +21,9 @@
 - Version 1.1.5
 - Added GiveBoat to Close Player
 - Added StoreBoat Option if you Drive Aways with boat you now can store it Everywhere
+- Version 1.1.6
+- Boats Now have an Inventory
+
 # installation 
 
 - Run the SQL files to add Tables in your DB
