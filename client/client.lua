@@ -423,7 +423,7 @@ RegisterNetEvent('mms-boats:client:boatprompt')
 AddEventHandler('mms-boats:client:boatprompt',function(model,name,sellprice,storageid,storagename,storage)
     local BoatPrompt = BccUtils.Prompts:SetupPromptGroup()
     local boatgive = BoatPrompt:RegisterPrompt(Config.GiveBoat, 0x760A9C6F, 1, 1, true, 'hold', {timedeventhash = 'MEDIUM_TIMED_EVENT'})
-    local boatstore = BoatPrompt:RegisterPrompt(Config.StoreBoat, 0xCEFD9220, 1, 1, true, 'hold', {timedeventhash = 'MEDIUM_TIMED_EVENT'})
+    local boatstore = BoatPrompt:RegisterPrompt(Config.StoreBoat, 0x4BC9DABB, 1, 1, true, 'hold', {timedeventhash = 'MEDIUM_TIMED_EVENT'})
     local boatstorage = BoatPrompt:RegisterPrompt(Config.BoatStorage, 0x4CC0E2FE, 1, 1, true, 'hold', {timedeventhash = 'MEDIUM_TIMED_EVENT'})
     while true do
         Wait(1)
